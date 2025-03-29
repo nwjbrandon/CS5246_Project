@@ -3,6 +3,21 @@ from sumy.nlp.tokenizers import Tokenizer
 from sumy.summarizers.text_rank import TextRankSummarizer
 from rouge_score import rouge_scorer
 from sumy.summarizers.lex_rank import LexRankSummarizer  
+from sumy.summarizers.luhn import LuhnSummarizer             
+from sumy.summarizers.lsa import LsaSummarizer                 
+
+def summarize_text_luhn(text, num_sentences=3):
+    parser = PlaintextParser.from_string(text, Tokenizer("english"))
+    summarizer_lex = LuhnSummarizer()                      
+    summary= summarizer_lex(parser.document, num_sentences)              
+    return " ".join(str(sentence) for sentence in summary)
+
+def summarize_text_lsa(text, num_sentences=3):
+    parser = PlaintextParser.from_string(text, Tokenizer("english"))
+    summarizer_lex = LsaSummarizer()                      
+    summary= summarizer_lex(parser.document, num_sentences)              
+    return " ".join(str(sentence) for sentence in summary)
+
 
 def summarize_text_lex(text, num_sentences=3):
     parser = PlaintextParser.from_string(text, Tokenizer("english"))
@@ -36,7 +51,7 @@ if __name__ == "__main__":
     AI simulates human intelligence in machines and is applied in fields like healthcare and finance to improve efficiency.
     """
     
-    generated_summary = summarize_text_lex(text, num_sentences=2)
+    generated_summary = summarize_text_lsa(text, num_sentences=2)
     print("Generated Summary:", generated_summary)
     
     scores = evaluate_summary(reference_summary, generated_summary)
