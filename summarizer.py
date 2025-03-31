@@ -1,3 +1,5 @@
+import pandas as pd
+
 from rouge_score import rouge_scorer
 
 from sumy.nlp.tokenizers import Tokenizer
@@ -54,17 +56,52 @@ class TextSummarizer:
         scores = scorer.score(reference_summary, generated_summary)
         return scores
 
-if __name__ == "__main__":
-    text = """
-    Artificial Intelligence (AI) is the simulation of human intelligence in machines that are programmed to think and learn.
-    AI is a broad field of study that includes machine learning, natural language processing, robotics, and more.
-    It is widely used in various industries such as healthcare, finance, and autonomous systems.
-    AI-powered systems can process vast amounts of data and make predictions, enhancing efficiency and decision-making.
-    """
+class BBCNews_Dataset:
+
+    def __init__(self):
+        pass
     
-    reference_summary = """
-    AI simulates human intelligence in machines and is applied in fields like healthcare and finance to improve efficiency.
-    """
+class CNNNews_Dataset:
+
+    def __init__(self, filenames):
+        self.df = pd.concat(filenames)
+
+    def __len__(self):
+        return len(self.df)
+    
+    def get(self, i):
+        row = self.df.iloc[i]
+        return {
+            "article": row["article"],
+            "summary": row["highlights"]
+        }
+
+
+if __name__ == "__main__":
+    cnn_news_dataset = CNNNews_Dataset(
+        filenames=[
+            # pd.read_csv("datasets/text_summary/cnn_news/train.csv"),
+            pd.read_csv("datasets/text_summary/cnn_news/test.csv"),
+            # pd.read_csv("datasets/text_summary/cnn_news/validation.csv"),
+        ]
+    )
+    print(len(cnn_news_dataset))
+    data = cnn_news_dataset.get(0)
+    # print(cnn_news_dataset.get(0))
+    text = data["article"]
+    reference_summary = data["summary"]
+    print(text)
+    # raise
+    # text = """
+    # Artificial Intelligence (AI) is the simulation of human intelligence in machines that are programmed to think and learn.
+    # AI is a broad field of study that includes machine learning, natural language processing, robotics, and more.
+    # It is widely used in various industries such as healthcare, finance, and autonomous systems.
+    # AI-powered systems can process vast amounts of data and make predictions, enhancing efficiency and decision-making.
+    # """
+    
+    # reference_summary = """
+    # AI simulates human intelligence in machines and is applied in fields like healthcare and finance to improve efficiency.
+    # """
 
     text_summarizer = TextSummarizer()
     methods = ["luhn", "lsa", "lex_rank", "text_rank"]
