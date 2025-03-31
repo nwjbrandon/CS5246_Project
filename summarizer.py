@@ -6,38 +6,51 @@ from sumy.summarizers.lex_rank import LexRankSummarizer
 from sumy.summarizers.luhn import LuhnSummarizer             
 from sumy.summarizers.lsa import LsaSummarizer                 
 
-def summarize_text_luhn(text, num_sentences=3):
-    parser = PlaintextParser.from_string(text, Tokenizer("english"))
-    summarizer_lex = LuhnSummarizer()                      
-    summary= summarizer_lex(parser.document, num_sentences)              
-    return " ".join(str(sentence) for sentence in summary)
+class TextSummarizer:
 
-def summarize_text_lsa(text, num_sentences=3):
-    parser = PlaintextParser.from_string(text, Tokenizer("english"))
-    summarizer_lex = LsaSummarizer()                      
-    summary= summarizer_lex(parser.document, num_sentences)              
-    return " ".join(str(sentence) for sentence in summary)
+    def __init__(self):
+        self.summarizers = {
+            "luhn": self.luhn_summarizer,
+            "lsa": self.lsa_summarizer,
+            "lex_rank": self.lex_rank_summarizer,
+            "text_rank": self.text_rank_summarizer,
+        }
+
+    def summarize_text(self, text, method, n_sentences=3):
+        summarizer = self.summarizers[method]
+        summary = summarizer(text, n_sentences=n_sentences)
+        return summary
+
+    def luhn_summarizer(self, text, n_sentences):
+        parser = PlaintextParser.from_string(text, Tokenizer("english"))
+        summarizer_lex = LuhnSummarizer()                      
+        summary = summarizer_lex(parser.document, n_sentences)              
+        return " ".join(str(sentence) for sentence in summary)
+
+    def lsa_summarizer(self, text, n_sentences):
+        parser = PlaintextParser.from_string(text, Tokenizer("english"))
+        summarizer_lex = LsaSummarizer()                      
+        summary = summarizer_lex(parser.document, n_sentences)              
+        return " ".join(str(sentence) for sentence in summary)
 
 
-def summarize_text_lex(text, num_sentences=3):
-    parser = PlaintextParser.from_string(text, Tokenizer("english"))
-    summarizer_lex = LexRankSummarizer()                      
-    summary= summarizer_lex(parser.document, num_sentences)              
-    return " ".join(str(sentence) for sentence in summary)
+    def lex_rank_summarizer(self, text, n_sentences):
+        parser = PlaintextParser.from_string(text, Tokenizer("english"))
+        summarizer_lex = LexRankSummarizer()                      
+        summary = summarizer_lex(parser.document, n_sentences)              
+        return " ".join(str(sentence) for sentence in summary)
 
 
-def summarize_text(text, num_sentences=3):
-    """Summarizes the input text using TextRank."""
-    parser = PlaintextParser.from_string(text, Tokenizer("english"))
-    summarizer = TextRankSummarizer()
-    summary = summarizer(parser.document, num_sentences)
-    return " ".join(str(sentence) for sentence in summary)
+    def text_rank_summarizer(sellf, text, n_sentences):
+        parser = PlaintextParser.from_string(text, Tokenizer("english"))
+        summarizer = TextRankSummarizer()
+        summary = summarizer(parser.document, n_sentences)
+        return " ".join(str(sentence) for sentence in summary)
 
-def evaluate_summary(reference_summary, generated_summary):
-    """Evaluates the generated summary using ROUGE scores."""
-    scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
-    scores = scorer.score(reference_summary, generated_summary)
-    return scores
+    def evaluate_summary(self, reference_summary, generated_summary):
+        scorer = rouge_scorer.RougeScorer(["rouge1", "rouge2", "rougeL"], use_stemmer=True)
+        scores = scorer.score(reference_summary, generated_summary)
+        return scores
 
 if __name__ == "__main__":
     text = """
@@ -50,11 +63,15 @@ if __name__ == "__main__":
     reference_summary = """
     AI simulates human intelligence in machines and is applied in fields like healthcare and finance to improve efficiency.
     """
+
+    text_summarizer = TextSummarizer()
+    methods = ["luhn", "lsa", "lex_rank", "text_rank"]
+    for method in methods:
+        generated_summary = text_summarizer.summarize_text(text, method, n_sentences=3)
+        print("Generated Summary:", generated_summary)
     
-    generated_summary = summarize_text_lsa(text, num_sentences=2)
-    print("Generated Summary:", generated_summary)
-    
-    scores = evaluate_summary(reference_summary, generated_summary)
-    print("\nROUGE Scores:")
-    for metric, score in scores.items():
-        print(f"{metric}: Precision={score.precision:.4f}, Recall={score.recall:.4f}, F1-score={score.fmeasure:.4f}")
+        scores = text_summarizer.evaluate_summary(reference_summary, generated_summary)
+
+        print("ROUGE Scores:")
+        for metric, score in scores.items():
+            print(f"{metric}: Precision={score.precision:.4f}, Recall={score.recall:.4f}, F1-score={score.fmeasure:.4f}")
