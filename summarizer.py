@@ -1,6 +1,4 @@
-import glob
-
-import pandas as pd
+from datasets import load_dataset
 
 from rouge_score import rouge_scorer
 
@@ -58,67 +56,22 @@ class TextSummarizer:
         scores = scorer.score(reference_summary, generated_summary)
         return scores
 
-class BBCNews_Dataset:
-
-    def __init__(self, filenames):
-        self.filenames = glob.glob(filenames)
-
-    def __len__(self):
-        return len(self.filenames)
-    
-    def get(self, i):
-        article_filename = self.filenames[i]
-        with open(article_filename) as f:
-            article = f.read()
-
-        summary_filename = article_filename.replace("articles", "summaries")
-        with open(summary_filename) as f:
-            summary = f.read()
-
-        return {
-            "article": article,
-            "summary": summary
-        }
-    
-class CNNNews_Dataset:
-
-    def __init__(self, filenames):
-        self.df = pd.concat(filenames)
-
-    def __len__(self):
-        return len(self.df)
-    
-    def get(self, i):
-        row = self.df.iloc[i]
-        return {
-            "article": row["article"],
-            "summary": row["highlights"]
-        }
-
 
 if __name__ == "__main__":
-    # filenames = [
-    #     pd.read_csv("datasets/text_summary/cnn_news/train.csv"),
-    #     pd.read_csv("datasets/text_summary/cnn_news/test.csv"),
-    #     pd.read_csv("datasets/text_summary/cnn_news/validation.csv"),
-    # ]
-    # dataset = CNNNews_Dataset(filenames=filenames)
+    ds = load_dataset("abisee/cnn_dailymail", "3.0.0")
+    data = ds["train"][0]
 
-    filenames = "datasets/text_summary/bbc_news/articles/*/*.txt"
-    dataset = BBCNews_Dataset(filenames=filenames)
-
-    data = dataset.get(0)
-    text = data["article"]
-    reference_summary = data["summary"]
-    print(text)
+    article = data["article"]
+    summary_ref = data["highlights"]
+    print(article)
 
     text_summarizer = TextSummarizer()
     methods = ["luhn", "lsa", "lex_rank", "text_rank"]
     for method in methods:
-        generated_summary = text_summarizer.summarize_text(text, method, n_sentences=3)
-        print("Generated Summary:", generated_summary)
+        summary_gen = text_summarizer.summarize_text(article, method, n_sentences=3)
+        print("Generated Summary:", summary_gen)
     
-        scores = text_summarizer.evaluate_summary(reference_summary, generated_summary)
+        scores = text_summarizer.evaluate_summary(summary_ref, summary_gen)
 
         print("ROUGE Scores:")
         for metric, score in scores.items():
