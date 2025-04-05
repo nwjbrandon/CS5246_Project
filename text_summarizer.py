@@ -15,15 +15,16 @@ from sumy.summarizers.text_rank import TextRankSummarizer
 
 nltk.download('punkt_tab')
 
+
 class TextSummarizer:
 
     def __init__(self):
         self.summarizers = {
+            "BART": self.facebook_bart_summarizer,
             "Luhn": self.luhn_summarizer,
             "LSA": self.lsa_summarizer,
             "LexRank": self.lex_rank_summarizer,
             "TextRank": self.text_rank_summarizer,
-            "BART": self.facebook_bart_summarizer,
         }
         self.algorithms = [summarizer for summarizer in self.summarizers]
 
@@ -61,8 +62,11 @@ class TextSummarizer:
         summary = self.summarizer_textrank(parser.document, n_sentences)
         return " ".join(str(sentence) for sentence in summary)
     
-    def facebook_bart_summarizer(self, text, min_length=50, max_length=100):
-        return self.summarizer_bart(text, min_length=min_length, max_length=max_length, do_sample=False)[0]["summary_text"]
+    def facebook_bart_summarizer(self, text, min_length=50, max_length=150, max_input_length=1024):
+        input_length = len(text.split())
+        max_length = min(max_length, input_length // 2)
+        min_length = min(min_length, max_length - 1)
+        return self.summarizer_bart(text[:max_input_length], min_length=min_length, max_length=max_length, do_sample=False)[0]["summary_text"]
 
 
 def rouge_score_metric(reference_summary, generated_summary):
@@ -105,7 +109,6 @@ def evaluate_text_summarizer(text_summarizer, dataset, text_key, summary_key):
                     rougeL_precisions.append(score.precision)
                     rougeL_recalls.append(score.recall)
                     rougeL_fmeasures.append(score.fmeasure)
-            break
 
         full_metrics.append([algorithm, "Rouge1", np.mean(score.precision), np.mean(score.recall), np.mean(score.fmeasure)])
         full_metrics.append([algorithm, "Rouge2", np.mean(score.precision), np.mean(score.recall), np.mean(score.fmeasure)])
