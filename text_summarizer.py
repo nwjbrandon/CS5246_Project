@@ -64,7 +64,7 @@ class TextSummarizer:
     def facebook_bart_summarizer(self, text, min_length=30, max_length=130, max_input_length=1024):
         input_length = len(text.split())
         max_length = input_length if input_length < max_length else max_length        
-        min_length = min(min_length, max_length // 2)
+        min_length = min(min_length, max_length)
         return self.summarizer_bart(text[:max_input_length], min_length=min_length, max_length=max_length, do_sample=False)[0]["summary_text"]
 
 
