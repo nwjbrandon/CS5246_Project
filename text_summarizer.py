@@ -92,6 +92,12 @@ def evaluate_text_summarizer(text_summarizer, dataset, text_key, summary_key):
         for data in tqdm(dataset):
             text = data[text_key]
             reference_summary = data[summary_key]
+
+            # Skip if the text is too short
+            input_length = len(text.split())
+            if input_length < 300:
+                continue
+
             generated_summary = text_summarizer.summarize_text(text, algorithm)
             rouge_scores = rouge_score_metric(reference_summary, generated_summary)
             
