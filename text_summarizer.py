@@ -52,7 +52,6 @@ class TextSummarizer:
 
     def lex_rank_summarizer(self, text, n_sentences=5):
         parser = PlaintextParser.from_string(text, Tokenizer("english"))
-        summarizer_lex = LexRankSummarizer()                      
         summary = self.summarizer_lexrank(parser.document, n_sentences)              
         return " ".join(str(sentence) for sentence in summary)
 
@@ -62,10 +61,10 @@ class TextSummarizer:
         summary = self.summarizer_textrank(parser.document, n_sentences)
         return " ".join(str(sentence) for sentence in summary)
     
-    def facebook_bart_summarizer(self, text, min_length=50, max_length=150, max_input_length=1024):
+    def facebook_bart_summarizer(self, text, min_length=30, max_length=130, max_input_length=1024):
         input_length = len(text.split())
-        max_length = min(max_length, input_length // 2)
-        min_length = min(min_length, max_length - 1)
+        max_length = input_length if input_length < max_length else max_length        
+        min_length = min(min_length, max_length)
         return self.summarizer_bart(text[:max_input_length], min_length=min_length, max_length=max_length, do_sample=False)[0]["summary_text"]
 
 
@@ -93,6 +92,12 @@ def evaluate_text_summarizer(text_summarizer, dataset, text_key, summary_key):
         for data in tqdm(dataset):
             text = data[text_key]
             reference_summary = data[summary_key]
+
+            # Skip if the text is too short
+            input_length = len(text.split())
+            if input_length < 300:
+                continue
+
             generated_summary = text_summarizer.summarize_text(text, algorithm)
             rouge_scores = rouge_score_metric(reference_summary, generated_summary)
             
