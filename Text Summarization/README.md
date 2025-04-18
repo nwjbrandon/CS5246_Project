@@ -1,6 +1,6 @@
 # Text Summarization
 
-This folder contains code for text summarization using various techniques.
+This folder contains code for text summarization using various methodologies.
 
 ## Files Explanation
 
