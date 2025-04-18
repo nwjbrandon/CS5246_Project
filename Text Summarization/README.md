@@ -13,9 +13,9 @@ This folder contains code for text summarization using various methodologies.
 ### Jupyter Notebooks
 
 - **Text summarizer with quali Notebook** - Builds a text summarizer using the model in the text_summarizer.py file 
-  - TTrains the model on XSum and CNN/DailyMail dataset
+  - Trains the model on XSum and CNN/DailyMail dataset
   - Use Rouge-1, Rouge-2 and Rouge-L scores to evaluate the model on Precision, Recall and F1 score.
-  - Additionally performs qualitative evaluation using a sample news artcile
+  - Additionally performs qualitative evaluation using a sample news article
  
 - **Traditional Extractive Summarization notebook** - A baseline model performance
   - Uses the 5 models - LSA, Luhn, TextRank, LexRank and BART
