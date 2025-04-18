@@ -1,4 +1,4 @@
-# Text Simplification Project
+# Lexical Simplification
 
 This repository contains code for analyzing and simplifying text by reducing complexity while preserving meaning.
 
